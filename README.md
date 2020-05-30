@@ -52,4 +52,4 @@ MAPS = {
 ## test
 ```sh
 python3.7 main.py
-``` d
+```
