@@ -44,7 +44,7 @@ class EpidemicEnv(gym.Env):
     self.action_length = 4
     self.state_length = 4 * 2 * 2 # 상하좌우, 코로나인지 일반인인지, 목적지에 도착했는지, 
 
-    self.link_position = [3,2]
+    self.agent_position = [3,2]
 
 
     # for multi agent
@@ -67,7 +67,21 @@ class EpidemicEnv(gym.Env):
   def get_target(self, direction):
     delta_x = [0, 0, -1, 1]
     delta_y = [-1, 1, 0, 0]
-    return  self.link_position[0] + delta_x[direction], self.link_position[1] + delta_y[direction]
+    return  self.agent_position[0] + delta_x[direction], self.agent_position[1] + delta_y[direction]
+
+  def is_virus_around(self):
+    result = False
+
+    if(self.agent_position[0] + -1, self.agent_position[1]):
+      result = True
+    elif(self.agent_position[0] + -1, self.agent_position[1]):
+      result = True
+    elif(self.agent_position[0], self.agent_position[1] + -1):
+      result = True
+    elif(self.agent_position[0], self.agent_position[1] + 1):
+      result = True
+
+    return result
 
   def is_move_correct(self, action):
     if (0 < action < 4):
@@ -85,14 +99,14 @@ class EpidemicEnv(gym.Env):
   def encode_state(self):
     return self.has_virus * 4 * (15 ** 2) * 4 * 2 * 2
 
-  def encode_link_position(self):
+  def encode_agent_position(self):
     # return link position between 0 and 225
-    return self.link_position[0] * self.ncol + self.link_position[1]
+    return self.agent_position[0] * self.ncol + self.agent_position[1]
 
   def move_link(self, target_x, target_y):
     self.map[target_x][target_y] = 2
-    self.map[self.link_position[0]][self.link_position[1]] = 0
-    self.link_position[0], self.link_position[1] = target_x, target_y
+    self.map[self.agent_position[0]][self.agent_position[1]] = 0
+    self.agent_position[0], self.agent_position[1] = target_x, target_y
 
   def map_to_string(self):
     s = ''
@@ -137,6 +151,7 @@ class EpidemicEnv(gym.Env):
     return reward_return, False
 
   def step(self, a):
+    is_virus_around
     if (self.is_move_correct(a)):
       r, d = self.move(a)
     else:
@@ -154,6 +169,6 @@ class EpidemicEnv(gym.Env):
   def reset(self):
     map = MAPS["15x15"]
     self.map = map = np.array(map).astype(int)
-    self.link_position = [3,2]
+    self.agent_position = [3,2]
     self.has_virus = False
     return self.encode_state()
