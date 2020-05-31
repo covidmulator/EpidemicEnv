@@ -44,6 +44,14 @@ class codefairEnv(gym.Env):
     self.action_length = 4
     self.state_length = 4 * 2 * 2 # 상하좌우, 코로나인지 일반인인지, 목적지에 도착했는지, 
 
+    obs_n    = list()
+    reward_n = list()
+    done_n   = list()
+    info_n   = {'n': []}
+
+    self.has_virus = False
+    self.step_index = 0
+    
     self.action_space = spaces.Discrete(self.action_length)
     self.observation_space = spaces.Discrete(self.state_length)
 
@@ -56,30 +64,34 @@ class codefairEnv(gym.Env):
     return  self.link_position[0] + delta_x[direction],self.link_position[1] + delta_y[direction]
 
   def is_move_correct(self, action):
-    if (action == 0): 
+    if (action == 0 or action == 1):
       # moving 
       target_x, target_y = self.get_target(action)
       return (0 <= target_x < self.nrow) and (0 <= target_y < self.ncol)
-    elif (action == 1 or action == 2):
-      # i.e. shooting an arrow
+    elif (action == 2):
+      # virus
+      return True
+    elif (action == 3):
+      # isolated
       return True
     return False
 
   def encode_link_position(self):
+    # return link position between 0 and 225
     return self.link_position[0] * self.ncol + self.link_position[1]
 
-  def encode_blocks(self):
-    encoding = 0
-    factor = 1
-    block_positions = [         [0,1],        [0,3],        [0,5],
-                        [1,0],  [1,1],        [1,3], [1,4], [1,5],
-                                [2,1],
-                        [3,0],  [3,1]                             ]
-    for position in block_positions:
-      if self.map[position[0]][position[1]] in [SHOPKEEPER, ICE]:
-        encoding += factor
-      factor *= 2
-    return encoding
+  def move_link(self, target_x, target_y):
+    self.map[target_x][target_y] = 2
+    self.map[self.link_position[0]][self.link_position[1]] = 0
+    self.link_position[0], self.link_position[1] = target_x, target_y
+
+  def map_to_string(self):
+    s = ''
+    for row in self.map:
+      for x in row:
+        s += str(x)
+
+    return s
 
   def render(self):
     self.memory_for_rendering.append(self.map_to_string())
