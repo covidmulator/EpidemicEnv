@@ -44,6 +44,8 @@ class CodefairEnv(gym.Env):
     self.action_length = 4
     self.state_length = 4 * 2 * 2 # 상하좌우, 코로나인지 일반인인지, 목적지에 도착했는지, 
 
+    self.link_position = [3,2]
+
     obs_n    = list()
     reward_n = list()
     done_n   = list()
@@ -54,6 +56,8 @@ class CodefairEnv(gym.Env):
     
     self.action_space = spaces.Discrete(self.action_length)
     self.observation_space = spaces.Discrete(self.state_length)
+
+    self.steps_since_start = 0
 
     # For rendering
     self.rendering_memory = []
@@ -76,6 +80,9 @@ class CodefairEnv(gym.Env):
       return True
     return False
 
+  def encode_state(self):
+        return self.has_virus * 4 * (15 ** 2) * 4 * 2 * 2
+
   def encode_link_position(self):
     # return link position between 0 and 225
     return self.link_position[0] * self.ncol + self.link_position[1]
@@ -94,7 +101,7 @@ class CodefairEnv(gym.Env):
     return s
 
   def render(self):
-    self.memory_for_rendering.append(self.map_to_string())
+    self.rendering_memory.append(self.map_to_string())
     return 0
 
   def browser_rendering(self, begin, end, nb_episodes=0):
@@ -107,3 +114,41 @@ class CodefairEnv(gym.Env):
         print("if (counter == " + str(i - begin) + ") print_map('" + self.memory_for_rendering[i] + "');", file=f)
         print("\n}", file=f)
     webbrowser.open('file:///' + os.path.realpath('./includes/index.html'), autoraise=False)
+
+  def move(self, direction):
+    target_x, target_y = self.get_target(direction)
+    object_in_direction = int(self.map[target_x][target_y])
+    if (object_in_direction == EMPTY):
+      self.move_link(target_x,target_y)
+    if (object_in_direction == VIRUS):
+      self.move_link(target_x,target_y)
+      self.has_virus = True
+    if (object_in_direction == ISOLATION and self.has_virus):
+      self.has_virus = False
+
+    return -0.1, False
+
+  def step(self, a):
+    if (self.is_move_correct(a)):
+      if (a < 4): # movement action
+        r, d = self.move(a)
+    else:
+      r, d = -1, False
+
+    # After x steps, end of episode
+    self.steps_since_start += 1
+    self.has_bow_of_light = (self.steps_since_start >= 100)
+    if (self.steps_since_start == 200):
+      d = True
+      self.steps_since_start = 0
+
+    print(self.map)
+
+    return (self.encode_state(), r, d, {})
+
+  def reset(self):
+    map = MAPS["15x15"]
+    self.map = map = np.array(map).astype(int)
+    self.link_position = [3,2]
+    self.has_virus = False
+    return self.encode_state()

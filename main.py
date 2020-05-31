@@ -22,7 +22,7 @@ if __name__ == "__main__":
     j = 0
 
     while j < num_episodes:
-        env.render('browser')
+        env.render()
         j += 1
         # Choose an action by epsilon-greedy (with noise) picking from Q table
         if (random.random() < (epsilon / np.log(i+2))):
