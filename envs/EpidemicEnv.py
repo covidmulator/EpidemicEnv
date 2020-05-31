@@ -9,8 +9,8 @@ import random
 
 # encoding for q table
 EMPTY = 0
-COMMON = 1
-VIRUS = 2
+COMMON = 2
+VIRUS = 1
 ISOLATION = 3
 
 MAPS = {
@@ -33,7 +33,7 @@ MAPS = {
   ]
 }
 
-class CodefairEnv(gym.Env):
+class EpidemicEnv(gym.Env):
   def __init__(self, map_key="15x15"):
     map = MAPS[map_key]
 
@@ -46,6 +46,8 @@ class CodefairEnv(gym.Env):
 
     self.link_position = [3,2]
 
+
+    # for multi agent
     obs_n    = list()
     reward_n = list()
     done_n   = list()
@@ -65,23 +67,23 @@ class CodefairEnv(gym.Env):
   def get_target(self, direction):
     delta_x = [0, 0, -1, 1]
     delta_y = [-1, 1, 0, 0]
-    return  self.link_position[0] + delta_x[direction],self.link_position[1] + delta_y[direction]
+    return  self.link_position[0] + delta_x[direction], self.link_position[1] + delta_y[direction]
 
   def is_move_correct(self, action):
-    if (action == 0 or action == 1):
+    if (0 < action < 4):
       # moving 
       target_x, target_y = self.get_target(action)
-      return (0 <= target_x < self.nrow) and (0 <= target_y < self.ncol)
-    elif (action == 2):
-      # virus
-      return True
-    elif (action == 3):
-      # isolated
-      return True
+      return (0 <= target_x < self.nrow - 1) and (0 <= target_y < self.ncol - 1)
+    # elif (action == 2):
+    #   # virus
+    #   return True
+    # elif (action == 3):
+    #   # isolated
+    #   return True
     return False
 
   def encode_state(self):
-        return self.has_virus * 4 * (15 ** 2) * 4 * 2 * 2
+    return self.has_virus * 4 * (15 ** 2) * 4 * 2 * 2
 
   def encode_link_position(self):
     # return link position between 0 and 225
@@ -105,33 +107,38 @@ class CodefairEnv(gym.Env):
     return 0
 
   def browser_rendering(self, begin, end, nb_episodes=0):
-    copy('./includes/template.js', '../server/codefair.js')
-    copy('./includes/index.html', '../server/index.html')
-    with open('../server/codefair.js', "a+") as f:
+    copy('./includes/template.js', './server/codefair.js')
+    copy('./includes/index.html', './server/index.html')
+    with open('./server/codefair.js', "a+") as f:
       if (nb_episodes > 0):
-        print(" log('<h3>Number of episodes since beginning: " + str(nb_episodes) + "</h3>');", file=f)
+        print("  log('<h3>Number of episodes since beginning: " + str(nb_episodes) + "</h3>');", file=f)
       for i in range(begin, end):
-        print("if (counter == " + str(i - begin) + ") print_map('" + self.memory_for_rendering[i] + "');", file=f)
-        print("\n}", file=f)
-    webbrowser.open('file:///' + os.path.realpath('./includes/index.html'), autoraise=False)
+        print("  if (counter == " + str(i - begin) + ") print_map('" + self.rendering_memory[i] + "');", file=f)
+      print("}", file=f)
+    webbrowser.open('file:///' + os.path.realpath('./server/index.html'), autoraise=False)
 
   def move(self, direction):
     target_x, target_y = self.get_target(direction)
     object_in_direction = int(self.map[target_x][target_y])
+
+    reward_return = 0;
+
     if (object_in_direction == EMPTY):
       self.move_link(target_x,target_y)
+      reward_return = .1
     if (object_in_direction == VIRUS):
       self.move_link(target_x,target_y)
       self.has_virus = True
+      reward_return = -.1
     if (object_in_direction == ISOLATION and self.has_virus):
       self.has_virus = False
+      reward_return = .1
 
-    return -0.1, False
+    return reward_return, False
 
   def step(self, a):
     if (self.is_move_correct(a)):
-      if (a < 4): # movement action
-        r, d = self.move(a)
+      r, d = self.move(a)
     else:
       r, d = -1, False
 
@@ -141,8 +148,6 @@ class CodefairEnv(gym.Env):
     if (self.steps_since_start == 200):
       d = True
       self.steps_since_start = 0
-
-    print(self.map)
 
     return (self.encode_state(), r, d, {})
 

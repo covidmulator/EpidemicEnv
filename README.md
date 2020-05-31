@@ -16,7 +16,7 @@
 ## Agent
 
 #### Environment
-codefairEnv.py
+EpidemicEnv.py
 
 #### state
 ```py

@@ -1,7 +1,7 @@
-from envs.codefairEnv import CodefairEnv
+from envs.EpidemicEnv import EpidemicEnv
 from gym.envs.registration import register
 
 register(
-  id='CodefairEnv-v0',
-  entry_point='envs:CodefairEnv',
+  id='EpidemicEnv-v0',
+  entry_point='envs:EpidemicEnv',
 )
