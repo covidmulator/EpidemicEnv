@@ -33,7 +33,7 @@ MAPS = {
   ]
 }
 
-class codefairEnv(gym.Env):
+class CodefairEnv(gym.Env):
   def __init__(self, map_key="15x15"):
     map = MAPS[map_key]
 
