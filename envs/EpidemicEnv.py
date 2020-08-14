@@ -88,12 +88,12 @@ class EpidemicEnv(gym.Env):
       # moving 
       target_x, target_y = self.get_target(action)
       return (0 <= target_x < self.nrow - 1) and (0 <= target_y < self.ncol - 1)
-    # elif (action == 2):
-    #   # virus
-    #   return True
-    # elif (action == 3):
-    #   # isolated
-    #   return True
+    elif (action == 2):
+      # virus
+      return True
+    elif (action == 3):
+      # isolated
+      return True
     return False
 
   def encode_state(self):
@@ -151,7 +151,6 @@ class EpidemicEnv(gym.Env):
     return reward_return, False
 
   def step(self, a):
-    is_virus_around
     if (self.is_move_correct(a)):
       r, d = self.move(a)
     else:
