@@ -151,7 +151,7 @@ class EpidemicEnv(gym.Env):
     return reward_return, False
 
   def step(self, a):
-    is_virus_around
+    # is_virus_around
     if (self.is_move_correct(a)):
       r, d = self.move(a)
     else:
