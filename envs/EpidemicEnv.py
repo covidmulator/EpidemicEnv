@@ -34,7 +34,7 @@ MAPS = {
 }
 
 class EpidemicEnv(gym.Env):
-  def __init__(self, map_key="15x15"):
+  def __init__(self, map_key="15x15", agent_position=[3,2], agent_num=1):
     map = MAPS[map_key]
 
     self.map = map = np.array(map).astype(int)
@@ -44,8 +44,7 @@ class EpidemicEnv(gym.Env):
     self.action_length = 4
     self.state_length = 4 * 2 * 2 # 상하좌우, 코로나인지 일반인인지, 목적지에 도착했는지, 
 
-    self.agent_position = [3,2]
-
+    self.agent_position = agent_position
 
     # for multi agent
     obs_n    = list()
@@ -63,11 +62,25 @@ class EpidemicEnv(gym.Env):
 
     # For rendering
     self.rendering_memory = []
+    
+    # For multi agent
+    self.agent_num = agent_num
+    self.agent_positions = [[3, i] for i in range(self.agent_num)]
+    self.agents_has_virus = [False for _ in range(self.agent_num)]
+    self.action_spaces = [spaces.Discrete(self.action_length) for _ in range(self.agent_num)]
+    self.observation_spaces = [spaces.Discrete(self.state_length) for _ in range(self.agent_num)]
 
   def get_target(self, direction):
     delta_x = [0, 0, -1, 1]
     delta_y = [-1, 1, 0, 0]
-    return  self.agent_position[0] + delta_x[direction], self.agent_position[1] + delta_y[direction]
+
+    result = list()
+
+    for i in range(self.agent_num):
+      item = self.agent_positions[i][0] + delta_x[direction], self.agent_position[i][1] + delta_y[direction]
+      result.append(item)
+    
+    return result
 
   def is_virus_around(self):
     result = False
@@ -85,8 +98,10 @@ class EpidemicEnv(gym.Env):
 
   def is_move_correct(self, action):
     if (0 < action < 4):
-      # moving 
-      target_x, target_y = self.get_target(action)
+      # moving
+
+      for i in range(self.agent_num):
+  
       return (0 <= target_x < self.nrow - 1) and (0 <= target_y < self.ncol - 1)
     # elif (action == 2):
     #   # virus
@@ -151,7 +166,6 @@ class EpidemicEnv(gym.Env):
     return reward_return, False
 
   def step(self, a):
-    is_virus_around
     if (self.is_move_correct(a)):
       r, d = self.move(a)
     else:

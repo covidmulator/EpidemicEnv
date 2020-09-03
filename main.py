@@ -5,7 +5,7 @@ import gym
 import envs
 
 if __name__ == "__main__":
-  env = gym.make('EpidemicEnv-v0')
+  env = gym.make('EpidemicEnv-v0', agent_position=[1, 1], agent_num=5)
 
   reward = 0
 
@@ -26,9 +26,10 @@ if __name__ == "__main__":
       j += 1
       # Choose an action by epsilon-greedy (with noise) picking from Q table
       if (random.random() < (epsilon / np.log(i+2))):
-          a = random.randint(0, env.action_space.n - 1)
+        a = random.randint(0, env.action_space.n - 1)
       else:
-          a = np.argmax(Q[s,:] + np.random.randn(1,env.action_space.n)*(1./(i+1)))
+        a = np.argmax(Q[s,:] + np.random.randn(1,env.action_space.n)*(1./(i+1)))
+
       # Get new state and reward from environment
       s1,r,d,_ = env.step(a)
       # Update Q-Table with new knowledge
@@ -38,7 +39,9 @@ if __name__ == "__main__":
       s = s1
       if d == True:
         break
+    
     if i == 999:
       env.browser_rendering(0, (i + 1), i)
+    
     os.system('cls' if os.name == 'nt' else 'clear')
     print("num_episodes: ", i, "\nreward: ", int(rAll))
