@@ -53,3 +53,7 @@ MAPS = {
 ```sh
 python3.7 main.py
 ```
+
+## Reference 
+[https://github.com/mohammadasghari/dqn-multi-agent-rl](https://github.com/mohammadasghari/dqn-multi-agent-rl)
+[https://github.com/openai/multiagent-particle-envs](https://github.com/openai/multiagent-particle-envs)
