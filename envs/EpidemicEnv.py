@@ -33,8 +33,8 @@ MAPS = {
   ]
 }
 
-class EpidemicEnv(gym.Env):
-  def __init__(self, map_key="15x15"):
+class EpidemicEnv(Env):
+  def __init__(self, map_key: str ="15x15") -> None:
     map = MAPS[map_key]
 
     self.map = map = np.array(map).astype(int)
@@ -45,7 +45,6 @@ class EpidemicEnv(gym.Env):
     self.state_length = 4 * 2 * 2 # 상하좌우, 코로나인지 일반인인지, 목적지에 도착했는지, 
 
     self.agent_position = [3,2]
-
 
     # for multi agent
     obs_n    = list()
