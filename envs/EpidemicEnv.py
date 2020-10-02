@@ -134,7 +134,7 @@ class EpidemicEnv(Env):
     target_x, target_y = self.get_target(direction)
     object_in_direction = int(self.map[target_x][target_y])
 
-    reward_return = 0;
+    reward_return = 0
 
     if (object_in_direction == EMPTY):
       self.move_link(target_x,target_y)
@@ -150,7 +150,7 @@ class EpidemicEnv(Env):
     return reward_return, False
 
   def step(self, a):
-    is_virus_around
+    # is_virus_around
     if (self.is_move_correct(a)):
       r, d = self.move(a)
     else:
