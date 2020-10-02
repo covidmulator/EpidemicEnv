@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from gym import utils, Env, spaces
+from gym import Env, spaces
 from shutil import copy
 import os
 import webbrowser

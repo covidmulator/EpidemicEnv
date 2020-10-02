@@ -1,7 +1,7 @@
 from typing import Tuple
 import gym
 import numpy as np
-from gym import utils, spaces
+from gym import spaces
 from random import choice
 
 # encoding for q table
@@ -61,6 +61,9 @@ class EpidemicMultiEnv(gym.Env):
 
     self.state_arr = [0 for _ in range(agent_num)]
     self.position_arr = self.get_position(agent_num)
+
+    self.action_space = spaces.Discrete(self.action_length)
+    self.observation_space = spaces.Discrete(self.state_length)
 
     self.step_index = 0
     self.steps_since_start = 0
@@ -133,7 +136,7 @@ class EpidemicMultiEnv(gym.Env):
     
     return (reward_return, False)
 
-  def step(self, action: int) -> Tuple[int, float, bool, dict]:
+  def step(self, action: int, index: int) -> Tuple[int, float, bool, dict]:
     if (self.is_move_correct(action)):
       r, d = self.move(action)
     else:
@@ -146,13 +149,13 @@ class EpidemicMultiEnv(gym.Env):
       d = True
       self.steps_since_start = 0
 
-    return (self.encode_state(), r, d, {})
+    return (self.encode_state(index), r, d, {})
 
   def reset(self) -> int:
     agent_map = MAPS["agent_map"]
     self.agent_map = agent_map = np.array(agent_map).astype(int)
 
-    self.state_arr = list(0 for _ in self.agent_num)
+    self.state_arr = [0 for _ in range(self.agent_num)]
     self.position_arr = self.get_position(self.agent_num)
-
-    return self.encode_state()
+    states = [self.encode_state(i) for i in range(self.agent_num+1)]
+    return states
