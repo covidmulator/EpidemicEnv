@@ -2,6 +2,7 @@ import numpy as np
 import os
 import random
 import gym
+import envs
 
 if __name__ == "__main__":
   agent_num = 15
