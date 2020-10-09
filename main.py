@@ -22,7 +22,7 @@ if __name__ == "__main__":
     j = 0
 
     while j < num_episodes:
-      env.render()
+      # env.render()
       j += 1
       # Choose an action by epsilon-greedy (with noise) picking from Q table
       if (random.random() < (epsilon / np.log(i+2))):
@@ -32,6 +32,7 @@ if __name__ == "__main__":
       # Get new state and reward from environment
       s1,r,d,_ = env.step(a)
       # Update Q-Table with new knowledge
+      print(np.max(Q[s1,:]))
       s1 = int(s1)
       Q[s,a] = Q[s,a] + lr * (r + y * np.max(Q[s1,:]) - Q[s,a])
       rAll += r

@@ -6,14 +6,12 @@ import envs
 
 if __name__ == "__main__":
   agent_num = 15
-
+  
   env = gym.make('EpidemicMultiEnv-v0')
 
-  env.env.__init__(agent_num)
-
-  reward = 0
-
   reward_arr = [0 for _ in range(agent_num)]
+  reward_all_arr = [0 for _ in range(agent_num)]
+  Q = np.zeros([env.observation_space.n, env.action_space.n])
   Q_arr = [np.zeros([env.observation_space.n, env.action_space.n]) for _ in range(agent_num)]
 
   lr = .8
@@ -21,30 +19,33 @@ if __name__ == "__main__":
   epsilon = .9
   num_episodes = 1000
 
-  print(Q_arr)
-
   for i in range(num_episodes):
-    for i in range(agent_num):
-      s = env.reset() # error
-      rAll = 0
-      d = False
-      j = 0
+    s = env.reset() # error
+    rAll = 0
+    d = False
+    j = 0
 
-      while j < num_episodes:
-        j += 1
-        # Choose an action by epsilon-greedy (with noise) picking from Q table
+    while j < num_episodes:
+      actions = list()
+      j += 1
+      # Choose an action by epsilon-greedy (with noise) picking from Q table
+      for _ in range(agent_num):
         if (random.random() < (epsilon / np.log(i+2))):
-            a = random.randint(0, env.action_space.n - 1)
+          a = random.randint(0, env.action_space.n - 1)
         else:
-            a = np.argmax(Q[s,:] + np.random.randn(1,env.action_space.n)*(1./(i+1)))
-        # Get new state and reward from environment
-        s1,r,d,_ = env.step(a)
-        # Update Q-Table with new knowledge
-        s1 = int(s1)
-        Q[s,a] = Q[s,a] + lr * (r + y * np.max(Q[s1,:]) - Q[s,a])
-        rAll += r
-        s = s1
-        if d == True:
-          break
-      os.system('cls' if os.name == 'nt' else 'clear')
-      print("num_episodes: ", i, "\nreward: ", int(rAll))
+          a = np.argmax(Q[s,:] + np.random.randn(1,env.action_space.n)*(1./(i+1)))
+        
+        actions.append(a)
+            
+      # Get new state and reward from environment
+      s1, r, d, _ = env.step(actions)
+      # Update Q-Table with new knowledge
+      for index in range(agent_num):
+        Q_sa = Q_arr[index][s[index], actions[index]]
+        Q_arr[index][s[index], actions[index]] = Q_sa + lr * (r[index] + y * np.max(Q_arr[index][s1[index], :]) - Q_sa)
+        reward_all_arr[index] += r[index]
+        s[index] = s1[index]
+
+    os.system('cls' if os.name == 'nt' else 'clear')
+    # print("num_episodes: ", i, "\nreward: ", reward_all_arr)
+    print(f'num_episodes: {i} \nreward: {reward_all_arr}')

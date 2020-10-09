@@ -11,5 +11,6 @@ register(
 register(
   id='EpidemicMultiEnv-v0',
   entry_point='envs:EpidemicMultiEnv',
-  max_episode_steps=100
+  max_episode_steps=100,
+  kwargs={"agent_num": 15}
 )
