@@ -4,10 +4,10 @@ import random
 import gym
 import envs
 
-if __name__ == "__main__":
-  agent_num = 15
-  
+if __name__ == "__main__":  
   env = gym.make('EpidemicMultiEnv-v0')
+  
+  agent_num = env.env.agent_num
 
   reward_arr = [0 for _ in range(agent_num)]
   reward_all_arr = [0 for _ in range(agent_num)]
@@ -47,5 +47,4 @@ if __name__ == "__main__":
         s[index] = s1[index]
 
     os.system('cls' if os.name == 'nt' else 'clear')
-    # print("num_episodes: ", i, "\nreward: ", reward_all_arr)
-    print(f'num_episodes: {i} \nreward: {reward_all_arr}')
+    print(f'num_episodes: {i} \nreward: {reward_all_arr}\nagent: \n{env.env.agent_matrix}')
