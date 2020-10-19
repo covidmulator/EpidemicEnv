@@ -1,26 +1,36 @@
-import numpy as np
 import os
 import random
 import gym
 import envs
+import numpy as np
 
 if __name__ == "__main__":  
+  reward_matrix = [
+    np.load("./data/서초.npy"),
+    np.load("./data/대치.npy"),
+    np.load("./data/선릉.npy"),
+    np.load("./data/남부터미널.npy"),
+    np.load("./data/양재.npy"),
+    np.load("./data/도곡.npy")
+  ]
+
   env = gym.make('EpidemicMultiEnv-v0')
-  
+  env.env.__init__(agent_num=800, reward_matrix=reward_matrix)
+
   agent_num = env.env.agent_num
 
   reward_arr = [0 for _ in range(agent_num)]
   reward_all_arr = [0 for _ in range(agent_num)]
   Q = np.zeros([env.observation_space.n, env.action_space.n])
-  Q_arr = [np.zeros([env.observation_space.n, env.action_space.n]) for _ in range(agent_num)]
+  Q_arr = [Q for _ in range(agent_num)]
 
   lr = .8
   y = .95
   epsilon = .9
-  num_episodes = 1000
+  num_episodes = 300
 
   for i in range(num_episodes):
-    s = env.reset() # error
+    s = env.reset()
     rAll = 0
     d = False
     j = 0
@@ -29,14 +39,14 @@ if __name__ == "__main__":
       actions = list()
       j += 1
       # Choose an action by epsilon-greedy (with noise) picking from Q table
-      for _ in range(agent_num):
+      for k in range(agent_num):
         if (random.random() < (epsilon / np.log(i+2))):
           a = random.randint(0, env.action_space.n - 1)
         else:
           a = np.argmax(Q[s,:] + np.random.randn(1,env.action_space.n)*(1./(i+1)))
         
         actions.append(a)
-            
+
       # Get new state and reward from environment
       s1, r, d, _ = env.step(actions)
       # Update Q-Table with new knowledge
@@ -46,5 +56,11 @@ if __name__ == "__main__":
         reward_all_arr[index] += r[index]
         s[index] = s1[index]
 
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print(f'num_episodes: {i} \nreward: {reward_all_arr}\nagent: \n{env.env.agent_matrix}')
+      os.system('cls' if os.name == 'nt' else 'clear')
+      print(f'num_episodes: {i} \nreward: {reward_all_arr}') # 기본 정보
+      print('서초\t\t대치\t선릉\n남부터미널\t양재\t도곡')
+      for i in range(15):
+        print(f'{env.env.agent_matrix[0][i]}\t{env.env.agent_matrix[1][i]}\t{env.env.agent_matrix[2][i]}')
+      print("")
+      for i in range(15):
+        print(f'{env.env.agent_matrix[3][i]}\t{env.env.agent_matrix[4][i]}\t{env.env.agent_matrix[5][i]}')

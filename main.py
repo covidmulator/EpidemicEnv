@@ -32,7 +32,7 @@ if __name__ == "__main__":
       # Get new state and reward from environment
       s1,r,d,_ = env.step(a)
       # Update Q-Table with new knowledge
-      print(np.max(Q[s1,:]))
+
       s1 = int(s1)
       Q[s,a] = Q[s,a] + lr * (r + y * np.max(Q[s1,:]) - Q[s,a])
       rAll += r
@@ -41,5 +41,6 @@ if __name__ == "__main__":
         break
     if i == 999:
       env.browser_rendering(0, (i + 1), i)
+
     os.system('cls' if os.name == 'nt' else 'clear')
-    print("num_episodes: ", i, "\nreward: ", int(rAll))
+    print("num_episodes: ", i, "\nreward: ", int(rAll), "\nagents", env.env.map)

@@ -1,6 +1,7 @@
 import gym
 import numpy as np
 from gym import spaces
+from sklearn.preprocessing import MinMaxScaler
 from random import choice
 from typing import Dict, Tuple
 
@@ -28,27 +29,9 @@ AGENT_MATRIX = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
-REWARD_MATRIX = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
 
 class EpidemicMultiEnv(gym.Env):
-  def __init__(self, agent_num: int) -> None:
-    reward_matrix = REWARD_MATRIX
+  def __init__(self, agent_num: int, reward_matrix: np.array) -> None:
     agent_matrix = AGENT_MATRIX
 
     self.agent_num = agent_num
@@ -56,93 +39,125 @@ class EpidemicMultiEnv(gym.Env):
     self.state_length = 4 * 2 * 2
     self.action_space = spaces.Discrete(self.action_length)
     self.observation_space = spaces.Discrete(self.state_length)
-    
-    self.reward_matrix = reward_matrix = np.array(reward_matrix).astype(int)
-    self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
-    self.nrow, self.ncol = nrow, ncol = self.reward_matrix.shape
+    self.rewards = self.min_max_norm(reward_matrix)
+
+    self.agent_matrix = agent_matrix = [np.array(agent_matrix).astype(int) for _ in range(len(self.rewards))]
+    self.nrow, self.ncol = nrow, ncol = self.agent_matrix[0].shape
     self.reward_range = (-1, 1)
 
-    self.agents = self.get_position(agent_num)
+    self.agents = self.get_position(self.agent_num, len(self.rewards))
     self.has_virus = [False for _ in range(agent_num)]
 
-    self.steps_since_start = 0
-    self.destination = (14, 14)
+    self.episode = 0
+    self.destinations = self.get_position(agent_num, len(reward_matrix))
 
-  def get_position(self, agent_num: int) -> list:
-    num_x = list(range(0, 16))
-    num_y = list(range(0, 16))
-    position = list()
+  def min_max_norm(self, lst: np.array) -> np.array:
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaler.fit(lst)
+    reward_matrix = scaler.transform(lst)
+
+    return reward_matrix
+
+  def get_position(self, agent_num: int, matrix_num: int) -> list:
+    num_x = list(range(0, self.ncol))
+    num_y = list(range(0, self.nrow))
+    num_z = list(range(0, matrix_num))
+    position_return = list()
+    positions = list()
+    
+    for x in num_x:
+      for y in num_y:
+        for z in num_z:
+          positions.append([x, y, z])
 
     for _ in range(agent_num):
-      position.append([num_x.pop(num_x.index(choice(num_x))), num_y.pop(num_y.index(choice(num_y)))])
+      selected = choice(positions)
+      position_return.append(selected)
+      positions.pop(positions.index(selected))
     
-    return position
+    return position_return
 
   def get_target(self, direction: int, index: int) -> Tuple[int, int]:
     delta_x = [0, 0, -1, 1]
     delta_y = [-1, 1, 0, 0]
-    return self.agents[index][0] + delta_x[direction], self.agents[index][1] + delta_y[direction]
+    agent_x = self.agents[index][0]
+    agent_y = self.agents[index][1]
+    return agent_x + delta_x[direction], agent_y + delta_y[direction]
 
   def is_virus_around(self, index: int) -> bool:
     result = False
+    x = self.agents[index][0]
+    y = self.agents[index][1]
+    z = self.agents[index][2]
 
-    if(self.agents[index][0] + -1, self.agents[index][1]):
+    if(x + -1, y):
       result = True
-    elif(self.agents[index][0] + -1, self.agents[index][1]):
+    elif(x + 1, y):
       result = True
-    elif(self.agents[index][0], self.agents[index][1] + -1):
+    elif(x, y + -1):
       result = True
-    elif(self.agents[index][0], self.agents[index][1] + 1):
+    elif(x, y + 1):
       result = True
 
     return result
   
   def is_move_correct(self, action: int, index: int) -> bool:
     if(0 < action < 4):
-      target_x, target_y = self.get_target(action, index)
-      return (0 <= target_x < self.nrow - 1) and (0 <= target_y < self.ncol - 1)
+      agent_x, agent_y = self.get_target(action, index)
+      return (0 <= agent_x < self.nrow - 1) and (0 <= agent_y < self.ncol - 1)
     
     return False
   
   def encode_state(self, index: int) -> int:
     return self.has_virus[index] * 4 * (15 ** 2) * 4 * 2 * 2
 
-  def move_link(self, x: int, y: int, index: int) -> None:
-    self.agent_matrix[x][y] = 2
-    self.agent_matrix[self.agents[index][0]][self.agents[index][1]] = 0
+  def move_link(self, x: int, y: int, z: int, index: int) -> None:
+    agent_x = self.agents[index][0]
+    agent_y = self.agents[index][1]
+    agent_z = self.agents[index][2]
+
+    self.agent_matrix[z][x][y] = 2 # update agent matrix
+
+    self.agent_matrix[agent_z][agent_x][agent_y] = 0
     self.agents[index][0] = x
     self.agents[index][1] = y
-
-  # def get_coord_state(self, x: int, y: int) -> int or False:
-  #   for index, (agent_x, agent_y) in enumerate(self.agents):
-  #     print(index)
-  #     if agent_x == x and agent_y == y:
-  #       return index
-
-  #   return False
+    self.agents[index][2] = z
 
   def move(self, direction: int, index: int) -> Tuple[float, bool]:
+    agent_x = self.agents[index][0]
+    agent_y = self.agents[index][1]
+    z = self.agents[index][2]
+
+    if(agent_x == agent_y == 7): # 역에 있을때
+      z = self.destinations[index][2] # 역을 통해 다른 지역 이동
+
     x, y = self.get_target(direction, index)
-    object_in_direction = int(self.agent_matrix[x][y])
+
+    reward = self.rewards[z][self.episode]
+    object_in_direction = int(self.agent_matrix[z][x][y])
 
     reward_return = 0
 
     is_end = False
 
-    if(x == self.destination[0] and y == self.destination[1]):
+    if x == self.destinations[index][0] \
+      and y == self.destinations[index][1] \
+      and z == self.destinations[index][2]:
       is_end = True
 
-    if(object_in_direction == EMPTY):
-      self.move_link(x, y, index)
-      reward_return = .2
-    elif(object_in_direction == VIRUS):
+    if object_in_direction == EMPTY:
+      self.move_link(x, y, z, index)
+      reward_return = .5
+    elif object_in_direction == VIRUS:
       self.has_virus = True
       reward_return = -.1
-    elif(object_in_direction == COMMON):
-      pass
-    elif(object_in_direction == ISOLATION): # 좌표의 에이전트 상태 확인하는 함수 필요 get_coord_state
-      self.move_link(x, y, index)
+    elif object_in_direction == COMMON:
       reward_return = -.1
+    elif object_in_direction == ISOLATION:
+      self.move_link(x, y, z, index)
+      reward_return = -.1
+
+    reward_return += reward
     
     return reward_return, is_end
 
@@ -164,12 +179,12 @@ class EpidemicMultiEnv(gym.Env):
     return encode_states, rewards, dones, {}
 
   def reset(self) -> int:
-    reward_matrix = REWARD_MATRIX
     agent_matrix = AGENT_MATRIX
 
-    self.reward_matrix = reward_matrix = np.array(reward_matrix).astype(int)
-    self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
+    self.agent_matrix = agent_matrix = [np.array(agent_matrix).astype(int) for _ in range(len(self.rewards))]
 
-    self.agents = self.get_position(self.agent_num)
+    self.episode += 1
+
+    self.agents = self.get_position(self.agent_num, len(self.rewards))
     states = [self.encode_state(i) for i in range(self.agent_num)]
     return states
