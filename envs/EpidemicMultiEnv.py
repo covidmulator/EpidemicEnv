@@ -45,17 +45,11 @@ class EpidemicMultiEnv(gym.Env):
     self.nrow, self.ncol = nrow, ncol = self.agent_matrix[0].shape
     self.reward_range = (-1, 1)
 
-    self.agents = self.get_position(len(self.rewards))
-    self.has_virus = self.get_virus()
+    self.agents = self.get_position(self.agent_num, len(self.rewards))
+    self.has_virus = [False for _ in range(agent_num)]
 
     self.episode = 0
-    self.destinations = self.get_position(len(reward_matrix))
-
-  def get_virus(self) -> list:
-    virus_return = [False for _ in range(self.agent_num)]
-    virus_return[randint(0, self.agent_num)] = True
-
-    return virus_return
+    self.destinations = self.get_position(agent_num, len(reward_matrix))
 
   def min_max_norm(self, lst: np.array) -> np.array:
     scaler = MinMaxScaler(feature_range=(0, 1))
@@ -64,7 +58,7 @@ class EpidemicMultiEnv(gym.Env):
 
     return reward_matrix
 
-  def get_position(self, matrix_num: int) -> list:
+  def get_position(self, agent_num: int, matrix_num: int) -> list:
     num_x = list(range(0, self.ncol))
     num_y = list(range(0, self.nrow))
     num_z = list(range(0, matrix_num))
@@ -76,7 +70,7 @@ class EpidemicMultiEnv(gym.Env):
         for z in num_z:
           positions.append([x, y, z])
 
-    for _ in range(self.agent_num):
+    for _ in range(agent_num):
       selected = choice(positions)
       position_return.append(selected)
       positions.pop(positions.index(selected))
@@ -96,14 +90,17 @@ class EpidemicMultiEnv(gym.Env):
     y = self.agents[index][1]
     z = self.agents[index][2]
 
-    for i in range(4):
-      around = self.get_target(i, index)
-      if(around == VIRUS):
-        self.has_virus[self.agents.index(x, y, z)] = True
-        result = True
+    if(x + -1, y):
+      result = True
+    elif(x + 1, y):
+      result = True
+    elif(x, y + -1):
+      result = True
+    elif(x, y + 1):
+      result = True
 
     return result
-
+  
   def is_move_correct(self, action: int, index: int) -> bool:
     if(0 < action < 4):
       agent_x, agent_y = self.get_target(action, index)
@@ -114,7 +111,7 @@ class EpidemicMultiEnv(gym.Env):
   def encode_state(self, index: int) -> int:
     return self.has_virus[index] * 4 * (15 ** 2) * 4 * 2 * 2
 
-  def move_link(self, x: int, y: int, z: int, index: int, status: int) -> None:
+  def move_link(self, x: int, y: int, z: int, index: int) -> None:
     agent_x = self.agents[index][0]
     agent_y = self.agents[index][1]
     agent_z = self.agents[index][2]
@@ -130,10 +127,6 @@ class EpidemicMultiEnv(gym.Env):
     agent_x = self.agents[index][0]
     agent_y = self.agents[index][1]
     z = self.agents[index][2]
-    status = COMMON
-
-    if(self.is_virus_around(index)):
-      status = VIRUS
 
     if(agent_x == agent_y == 7): # 역에 있을때
       z = self.destinations[index][2] # 역을 통해 다른 지역 이동
@@ -153,16 +146,15 @@ class EpidemicMultiEnv(gym.Env):
       is_end = True
 
     if object_in_direction == EMPTY:
-      self.move_link(x, y, z, index, status)
+      self.move_link(x, y, z, index)
       reward_return = .5
     elif object_in_direction == VIRUS:
-      self.move_link(x, y, z, index, status)
+      self.has_virus = True
       reward_return = -.1
     elif object_in_direction == COMMON:
-      self.move_link(x, y, z, index, status)
       reward_return = -.1
     elif object_in_direction == ISOLATION:
-      self.move_link(x, y, z, index, status)
+      self.move_link(x, y, z, index)
       reward_return = -.1
 
     reward_return += reward
@@ -193,6 +185,6 @@ class EpidemicMultiEnv(gym.Env):
 
     self.episode += 1
 
-    self.agents = self.get_position(len(self.rewards))
+    self.agents = self.get_position(self.agent_num, len(self.rewards))
     states = [self.encode_state(i) for i in range(self.agent_num)]
     return states

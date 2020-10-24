@@ -5,7 +5,7 @@ import envs
 import numpy as np
 
 if __name__ == "__main__":  
-  reward_matrix = [
+  population = [
     np.load("./data/서초.npy"),
     np.load("./data/대치.npy"),
     np.load("./data/선릉.npy"),
@@ -14,8 +14,15 @@ if __name__ == "__main__":
     np.load("./data/도곡.npy")
   ]
 
+  # 서초: (2,9)
+  # 대치: (11,4)
+  # 도곡:(9,4)
+  # 양재:(7,4)
+  # 선릉:(9,9)
+  # 남부터미널: (3,4)
+
   env = gym.make('EpidemicMultiEnv-v0')
-  env.env.__init__(agent_num=800, reward_matrix=reward_matrix)
+  env.env.__init__(100, population)
 
   agent_num = env.env.agent_num
 
@@ -57,7 +64,7 @@ if __name__ == "__main__":
         s[index] = s1[index]
 
       os.system('cls' if os.name == 'nt' else 'clear')
-      print(f'num_episodes: {i} \nreward: {reward_all_arr}') # 기본 정보
+      print(f'num_episodes: {i}') # 기본 정보
       print('서초\t\t대치\t선릉\n남부터미널\t양재\t도곡')
       for i in range(15):
         print(f'{env.env.agent_matrix[0][i]}\t{env.env.agent_matrix[1][i]}\t{env.env.agent_matrix[2][i]}')
