@@ -6,12 +6,12 @@ import numpy as np
 
 if __name__ == "__main__":  
   population = [
-    np.load("./data/서초.npy"),
-    np.load("./data/대치.npy"),
-    np.load("./data/도곡.npy"),
-    np.load("./data/양재.npy"),
-    np.load("./data/선릉.npy"),
-    np.load("./data/남부터미널.npy")
+    np.load("./data/seocho.npy"),
+    np.load("./data/daechi.npy"),
+    np.load("./data/dogok.npy"),
+    np.load("./data/yangjae.npy"),
+    np.load("./data/sunreung.npy"),
+    np.load("./data/nambu.npy")
   ]
 
   env = gym.make('EpidemicMultiEnv-v0')
