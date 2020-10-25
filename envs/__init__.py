@@ -1,6 +1,7 @@
 from envs.EpidemicEnv import EpidemicEnv
 from envs.EpidemicMultiEnv import EpidemicMultiEnv
 from gym.envs.registration import register
+import numpy as np
 
 register(
   id='EpidemicEnv-v0',
@@ -9,12 +10,12 @@ register(
 )
 
 r = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  np.load("./data/seocho.npy"),
+  np.load("./data/daechi.npy"),
+  np.load("./data/dogok.npy"),
+  np.load("./data/yangjae.npy"),
+  np.load("./data/sunreung.npy"),
+  np.load("./data/nambu.npy")
 ]
 
 register(

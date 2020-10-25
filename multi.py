@@ -2,6 +2,8 @@ import os
 import gym
 import envs
 import numpy as np
+import time
+from sklearn.preprocessing import MinMaxScaler
 
 if __name__ == "__main__":  
   population = [
@@ -20,7 +22,7 @@ if __name__ == "__main__":
 
   num_episodes = 300
 
-
+  # time.sleep(100)
   r = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -44,15 +46,19 @@ if __name__ == "__main__":
     s = env.reset()
     rAll = 0
     j = 0
+    is_fin = j < num_episodes-1
 
-    while j < num_episodes:
+    while j < num_episodes-1:
       j += 1
       state, reward, done, infos = env.step(r)
       os.system('cls' if os.name == 'nt' else 'clear')
-      print(f'num_episodes: {i}') # 기본 정보
+      print(f'num_episodes: {env.env.episode}') # 기본 정보
       print(env.env.has_virus.count(True))
       print("서초: (2,9)   # 대치: (11,4)   # 도곡:(9,4)   # 양재:(7,4)   # 선릉:(9,9)   # 남부터미널: (3,4)")
       print(f'{env.env.agent_matrix}')
 
       if not(done):
         break
+    
+    if is_fin:
+      break

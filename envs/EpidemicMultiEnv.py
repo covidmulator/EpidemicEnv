@@ -75,7 +75,7 @@ class EpidemicMultiEnv(gym.Env):
     self.agents = self.get_position()
     self.has_virus = self.get_virus()
 
-    self.episode = 0
+    self.episode = 298
     self.destinations = self.get_position()
     
     self.steps = [0 for _ in range(agent_num)]
@@ -157,7 +157,7 @@ class EpidemicMultiEnv(gym.Env):
         if(self.agent_matrix[around_x][around_y] == VIRUS):
           self.has_virus[self.agents.index([x, y])] = True
           result = True
-
+  
     return result
 
   def is_move_correct(self, action: int, index: int) -> bool:
