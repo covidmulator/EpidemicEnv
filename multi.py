@@ -42,13 +42,13 @@ if __name__ == "__main__":
 
   result = []
 
+
   for i in range(num_episodes):
     s = env.reset()
     rAll = 0
     j = 0
-    is_fin = j < num_episodes-1
 
-    while j < num_episodes-1:
+    while j < num_episodes:
       j += 1
       state, reward, done, infos = env.step(r)
       os.system('cls' if os.name == 'nt' else 'clear')
@@ -56,13 +56,9 @@ if __name__ == "__main__":
       print(env.env.has_virus.count(True))
       print("서초: (2,9)   # 대치: (11,4)   # 도곡:(9,4)   # 양재:(7,4)   # 선릉:(9,9)   # 남부터미널: (3,4)")
       print(f'{env.env.agent_matrix}')
-      result.append(env.env.agent_matrix)
+      result.append(env.env.agent_matrix.tolist())
+      with open('./result.json', 'w') as f:
+        json.dump(result, f)
 
       if not(done):
         break
-    
-    if is_fin:
-      break
-
-  with open("result.json", "w") as f:
-    json.dump(result, f)
