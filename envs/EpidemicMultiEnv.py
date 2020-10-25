@@ -55,7 +55,7 @@ class EpidemicMultiEnv(gym.Env):
 
     self.agent_num = agent_num
     self.action_length = 4
-    self.state_length = 4
+    self.state_length = 15 * 15
     self.action_space = spaces.Discrete(self.action_length)
     self.observation_space = spaces.Discrete(self.state_length)
     self.population = self.min_max_norm(population)
