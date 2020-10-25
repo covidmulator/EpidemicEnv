@@ -120,7 +120,7 @@ class EpidemicMultiEnv(gym.Env):
       selected = choice(positions)
       positions_return.append(selected)
       positions.pop(positions.index(selected))
-    
+
     return positions_return
 
   def get_virus(self) -> list:
@@ -192,9 +192,10 @@ class EpidemicMultiEnv(gym.Env):
     is_end = False
 
     if x == self.destinations[index][0] and y == self.destinations[index][1]:
-      self.agents.pop(index)
+      # self.agents.pop(index)
       status = EMPTY
       is_end = True
+
     elif object_in_direction == EMPTY:
       self.move_link(x, y, index, status)
       reward_return = .5
@@ -226,8 +227,8 @@ class EpidemicMultiEnv(gym.Env):
 
   def action(self, actions) -> Tuple[list, list, list, dict]:
     rewards = list()
-    dones = list()
     encode_states = list()
+    dones = list()
     
     for i in range(self.agent_num):
       if (self.is_move_correct(actions[i], i)):
@@ -239,14 +240,14 @@ class EpidemicMultiEnv(gym.Env):
       rewards.append(r)
       dones.append(d)
 
-    return encode_states, rewards, dones, {}
+    return encode_states, rewards, False in dones, {}
 
   def update_reward_matrix(self, matrix: list) -> None:
     for x, lst in enumerate(self.reward_matrix):
       for y in range(len(lst)):
         self.reward_matrix[x][y] += matrix[x][y]
 
-  def step(self, matrix: list) -> Tuple[list, float, dict, dict]:
+  def step(self, matrix: list) -> Tuple[list, float, list, dict]:
     self.update_reward_matrix(matrix)
 
     actions = self.choose_action()

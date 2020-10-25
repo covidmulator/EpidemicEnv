@@ -44,17 +44,16 @@ if __name__ == "__main__":
   for i in range(num_episodes):
     s = env.reset()
     rAll = 0
-    d = False
     j = 0
 
     while j < num_episodes:
       j += 1
-      state, reward, dones = env.step(r)
+      state, reward, done, infos = env.step(r)
 
       os.system('cls' if os.name == 'nt' else 'clear')
       print(f'num_episodes: {i}') # 기본 정보
       print("서초: (2,9)   # 대치: (11,4)   # 도곡:(9,4)   # 양재:(7,4)   # 선릉:(9,9)   # 남부터미널: (3,4)")
       print(f'{env.env.agent_matrix}')
 
-      if False not in dones:
+      if not(done):
         break
