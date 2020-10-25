@@ -2,8 +2,7 @@ import os
 import gym
 import envs
 import numpy as np
-import time
-from sklearn.preprocessing import MinMaxScaler
+import json
 
 if __name__ == "__main__":  
   population = [
@@ -41,6 +40,7 @@ if __name__ == "__main__":
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   ]
 
+  result = []
 
   for i in range(num_episodes):
     s = env.reset()
@@ -56,9 +56,13 @@ if __name__ == "__main__":
       print(env.env.has_virus.count(True))
       print("서초: (2,9)   # 대치: (11,4)   # 도곡:(9,4)   # 양재:(7,4)   # 선릉:(9,9)   # 남부터미널: (3,4)")
       print(f'{env.env.agent_matrix}')
+      result.append(env.env.agent_matrix)
 
       if not(done):
         break
     
     if is_fin:
       break
+
+  with open("result.json", "w") as f:
+    json.dump(result, f)
