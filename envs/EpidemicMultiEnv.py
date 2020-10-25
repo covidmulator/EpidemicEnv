@@ -130,8 +130,11 @@ class EpidemicMultiEnv(gym.Env):
     return positions_return
 
   def get_virus(self) -> list:
+    index = randint(0, self.agent_num - 1)
     virus_return = [False for _ in range(self.agent_num)]
-    virus_return[randint(0, self.agent_num - 1)] = True
+    virus_return[index] = True
+    x, y = self.agents[index]
+    self.agent_matrix[x][y] = VIRUS
 
     return virus_return
 
@@ -152,7 +155,7 @@ class EpidemicMultiEnv(gym.Env):
         around_x, around_y = self.get_target(action, index)
       
         if(self.agent_matrix[around_x][around_y] == VIRUS):
-          self.has_virus[self.agents.index(x, y)] = True
+          self.has_virus[self.agents.index([x, y])] = True
           result = True
 
     return result
@@ -202,7 +205,6 @@ class EpidemicMultiEnv(gym.Env):
     if x == self.destinations[index][0] and y == self.destinations[index][1]:
       status = EMPTY
       is_end = True
-
     elif object_in_direction == EMPTY:
       self.move_link(x, y, index, status)
       reward_return = .5

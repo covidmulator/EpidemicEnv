@@ -1,5 +1,4 @@
 import os
-import random
 import gym
 import envs
 import numpy as np
@@ -15,7 +14,7 @@ if __name__ == "__main__":
   ]
 
   env = gym.make('EpidemicMultiEnv-v0')
-  env.env.__init__(100, population)
+  env.env.__init__(200, population)
 
   agent_num = env.env.agent_num
 
@@ -49,9 +48,9 @@ if __name__ == "__main__":
     while j < num_episodes:
       j += 1
       state, reward, done, infos = env.step(r)
-
       os.system('cls' if os.name == 'nt' else 'clear')
       print(f'num_episodes: {i}') # 기본 정보
+      print(env.env.has_virus.count(True))
       print("서초: (2,9)   # 대치: (11,4)   # 도곡:(9,4)   # 양재:(7,4)   # 선릉:(9,9)   # 남부터미널: (3,4)")
       print(f'{env.env.agent_matrix}')
 
