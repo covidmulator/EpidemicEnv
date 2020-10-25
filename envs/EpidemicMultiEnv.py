@@ -75,7 +75,7 @@ class EpidemicMultiEnv(gym.Env):
     self.agents = self.get_position()
     self.has_virus = self.get_virus()
 
-    self.episode = 298
+    self.episode = 0
     self.destinations = self.get_position()
     
     self.steps = [0 for _ in range(agent_num)]
