@@ -65,7 +65,7 @@ class EpidemicMultiEnv(gym.Env):
       spaces.Discrete(15)
     ))
     self.population = self.min_max_norm(population)
-    
+
     Q = np.zeros([self.observation_space.shape[0][0], self.action_space.shape[1][0]])
 
     self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
@@ -148,8 +148,8 @@ class EpidemicMultiEnv(gym.Env):
     y = self.agents[index][1]
 
     for i in range(4):
-      around = self.get_target(i, index)
-      if(around == VIRUS):
+      around_x, around_y = self.get_target(i, index)
+      if(self.agent_matrix[around_x][around_y] == VIRUS):
         self.has_virus[self.agents.index(x, y)] = True
         result = True
 
