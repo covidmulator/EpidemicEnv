@@ -147,11 +147,13 @@ class EpidemicMultiEnv(gym.Env):
     x = self.agents[index][0]
     y = self.agents[index][1]
 
-    for i in range(4):
-      around_x, around_y = self.get_target(i, index)
-      if(self.agent_matrix[around_x][around_y] == VIRUS):
-        self.has_virus[self.agents.index(x, y)] = True
-        result = True
+    for action in range(4):
+      if(self.is_move_correct(action, index)):
+        around_x, around_y = self.get_target(action, index)
+      
+        if(self.agent_matrix[around_x][around_y] == VIRUS):
+          self.has_virus[self.agents.index(x, y)] = True
+          result = True
 
     return result
 
