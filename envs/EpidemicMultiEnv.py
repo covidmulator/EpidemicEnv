@@ -56,11 +56,17 @@ class EpidemicMultiEnv(gym.Env):
     self.agent_num = agent_num
     self.action_length = 4
     self.state_length = 15 * 15
-    self.action_space = spaces.Discrete(self.action_length)
-    self.observation_space = spaces.Discrete(self.state_length)
+    self.action_space = spaces.Tuple((
+      spaces.Discrete(15),
+      spaces.Discrete(15)
+    ))
+    self.observation_space = spaces.Tuple((
+      spaces.Discrete(15),
+      spaces.Discrete(15)
+    ))
     self.population = self.min_max_norm(population)
     
-    Q = np.zeros([self.observation_space.n, self.action_space.n])
+    Q = np.zeros([self.observation_space.shape[0][0], self.action_space.shape[1][0]])
 
     self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
     self.nrow, self.ncol = nrow, ncol = self.agent_matrix.shape
@@ -217,9 +223,9 @@ class EpidemicMultiEnv(gym.Env):
     actions = list()
     for index in range(self.agent_num):
       if (random() < (self.epsilon / np.log(self.episode + 2))):
-        a = randint(0, self.action_space.n - 1)
+        a = randint(0, self.action_space.shape[0][0] - 1)
       else:
-        a = np.argmax(self.Q_list[index][self.s,:][index] + np.random.randn(1, self.action_space.n) * (1. / (self.episode + 1)))
+        a = np.argmax(self.Q_list[index][self.s,:][index] + np.random.randn(1, self.action_space.shape[0][0]) * (1. / (self.episode + 1)))
 
       actions.append(a)
 
