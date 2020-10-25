@@ -66,7 +66,7 @@ class EpidemicMultiEnv(gym.Env):
     ))
     self.population = self.min_max_norm(population)
 
-    Q = np.zeros([self.observation_space.shape[0][0], self.action_space.shape[1][0]])
+    Q = np.zeros([15, 15])
 
     self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
     self.nrow, self.ncol = nrow, ncol = self.agent_matrix.shape
@@ -198,7 +198,6 @@ class EpidemicMultiEnv(gym.Env):
     is_end = False
 
     if x == self.destinations[index][0] and y == self.destinations[index][1]:
-      # self.agents.pop(index)
       status = EMPTY
       is_end = True
 
@@ -223,9 +222,9 @@ class EpidemicMultiEnv(gym.Env):
     actions = list()
     for index in range(self.agent_num):
       if (random() < (self.epsilon / np.log(self.episode + 2))):
-        a = randint(0, self.action_space.shape[0][0] - 1)
+        a = randint(0, 15 - 1)
       else:
-        a = np.argmax(self.Q_list[index][self.s,:][index] + np.random.randn(1, self.action_space.shape[0][0]) * (1. / (self.episode + 1)))
+        a = np.argmax(self.Q_list[index][self.s,:][index] + np.random.randn(1, 15) * (1. / (self.episode + 1)))
 
       actions.append(a)
 
