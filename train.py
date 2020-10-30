@@ -90,6 +90,7 @@ class EpidemicMultiEnv(gym.Env):
 
     self.reward_arr = [0 for _ in range(env_config["agent_num"])]
     self.reward_all_arr = [0 for _ in range(env_config["agent_num"])]
+    self.agent_all_arr = []
 
 
   def min_max_norm(self, lst: list) -> list:
@@ -271,7 +272,8 @@ class EpidemicMultiEnv(gym.Env):
     if self.episode == 299:
       d = True
 
-    write_json(self.agent_matrix)
+    self.agent_all_arr.append(self.agent_matrix.tolist())
+    write_json(self.agent_all_arr)
 
     return self.agent_matrix, np.mean(self.steps), d, {"matrix": self.agent_matrix}
 
