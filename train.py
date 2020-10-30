@@ -2,13 +2,13 @@ from ray import tune
 import ray
 from ray.rllib.agents import a3c
 
-
 import gym
 import numpy as np
 from gym import spaces
 from sklearn.preprocessing import MinMaxScaler
 from random import choice, randint, random
 from typing import List, Tuple
+from write import write_json
 
 # encoding for q table
 # entity에 개개인의 값을 가지도록 만들면 좋을 듯
@@ -271,6 +271,8 @@ class EpidemicMultiEnv(gym.Env):
     if self.episode == 299:
       d = True
 
+    write_json(self.agent_matrix)
+
     return self.agent_matrix, np.mean(self.steps), d, {"matrix": self.agent_matrix}
 
   def reset(self) -> List[int]:
@@ -307,7 +309,5 @@ if __name__ == "__main__":
   trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
       "env_config": {'agent_num':200,'population':population},  # config to pass to env class
   })
-  for _ in range(10000):
-    result_dict = trainer.train()
-
-    print(result_dict)
+  for _ in range(90000):
+    print(trainer.train())
