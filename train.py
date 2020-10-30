@@ -61,13 +61,8 @@ class EpidemicMultiEnv(gym.Env):
     self.agent_num = env_config["agent_num"]
     self.action_length = 4
     self.state_length = 15 * 15
-<<<<<<< HEAD
-    self.action_space = spaces.Box(low=-1.0,high=4.0,shape=(15,15),dtype=np.float32),
+    self.action_space = spaces.Box(low=-1.0,high=4.0,shape=(225,),dtype=np.float32)
     self.observation_space = spaces.Box(low=-1.0, high=4.0,shape=(15,15),dtype=np.float32)
-=======
-    self.action_space = spaces.Box(low=0.0, high=4.0, shape=(15, 15), dtype=np.float32)
-    self.observation_space = spaces.Box(low=0.0, high=4.0, shape=(15, 15), dtype=np.float32)
->>>>>>> 6d0943a4bd9aa2d388a8750fd40d87ea3b77b7f6
     self.population = self.min_max_norm(env_config["population"])
 
     Q = np.zeros([15, 15])
@@ -79,9 +74,10 @@ class EpidemicMultiEnv(gym.Env):
     self.agents = self.get_position()
     self.has_virus = self.get_virus()
 
+    self.count = 0
     self.episode = 0
     self.destinations = self.get_position()
-    
+
     self.steps = [0 for _ in range(env_config["agent_num"])]
 
     self.reward_matrix = self.get_reward_matrix(reward_matrix)
@@ -156,18 +152,18 @@ class EpidemicMultiEnv(gym.Env):
     for action in range(4):
       if(self.is_move_correct(action, index)):
         around_x, around_y = self.get_target(action, index)
-      
+
         if(self.agent_matrix[around_x][around_y] == VIRUS):
           self.has_virus[self.agents.index([x, y])] = True
           result = True
-  
+
     return result
 
   def is_move_correct(self, action: int, index: int) -> bool:
     if(0 < action < 4):
       agent_x, agent_y = self.get_target(action, index)
       return (0 <= agent_x < self.nrow - 1) and (0 <= agent_y < self.ncol - 1)
-    
+
     return False
 
   def encode_state(self, index: int) -> int:
@@ -222,8 +218,7 @@ class EpidemicMultiEnv(gym.Env):
       reward_return = -.1
 
     reward_return += self.reward_matrix[agent_x][agent_y]
-    
-    
+
     return reward_return, is_end
 
   def choose_action(self):
@@ -242,7 +237,7 @@ class EpidemicMultiEnv(gym.Env):
     rewards = list()
     encode_states = list()
     dones = list()
-    
+
     for i in range(self.agent_num):
       if (self.is_move_correct(actions[i], i)):
         r, d = self.move(actions[i], i)
@@ -261,8 +256,7 @@ class EpidemicMultiEnv(gym.Env):
         self.reward_matrix[x][y] += matrix[x][y]
 
   def step(self, matrix: list) -> Tuple[list, float, list, dict]:
-    matrix = matrix[0]
-    print(len(matrix))
+    matrix = [matrix[15*i:15*(i+1)] for i in range(15)]
     self.update_reward_matrix(matrix)
 
     actions = self.choose_action()
@@ -274,13 +268,18 @@ class EpidemicMultiEnv(gym.Env):
       self.reward_all_arr[index] += r[index]
       self.s[index] = s1[index]
 
-    return self.agent_matrix, np.mean(self.steps), d, {}
+    if self.episode == 299:
+      d = True
+
+    return self.agent_matrix, np.mean(self.steps), d, {"matrix": self.agent_matrix}
 
   def reset(self) -> List[int]:
     agent_matrix = AGENT_MATRIX
     reward_matrix = REWARD_MATRIX
 
-    self.episode += 1
+    self.count += 1
+    if self.count % 300 == 0:
+      self.episode += 1
 
     self.agent_matrix = agent_matrix = np.array(agent_matrix).astype(int)
     self.reward_matrix = self.get_reward_matrix(reward_matrix)
@@ -304,17 +303,11 @@ if __name__ == "__main__":
     np.load("./data/sunreung.npy"),
     np.load("./data/nambu.npy")
   ]
-<<<<<<< HEAD
   ray.init()
   trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
       "env_config": {'agent_num':200,'population':population},  # config to pass to env class
   })
-=======
-ray.init()
-trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
-    "env_config": {'agent_num':100, 'population':population},  # config to pass to env class
-})
->>>>>>> 6d0943a4bd9aa2d388a8750fd40d87ea3b77b7f6
+  for _ in range(10000):
+    result_dict = trainer.train()
 
-  while True:
-    print(trainer.train())
+    print(result_dict)
