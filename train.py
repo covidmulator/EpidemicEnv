@@ -61,14 +61,8 @@ class EpidemicMultiEnv(gym.Env):
     self.agent_num = env_config["agent_num"]
     self.action_length = 4
     self.state_length = 15 * 15
-    self.action_space = spaces.Tuple((
-      spaces.Box(low=-1.0,high=1.0,shape=(15,),dtype=np.float32),
-      spaces.Box(low=-1.0,high=1.0,shape=(15,),dtype=np.float32)
-    ))
-    self.observation_space = spaces.Tuple((
-      spaces.Box(low=-1.0,high=4.0,shape=(15,),dtype=np.float32),
-      spaces.Box(low=-1.0,high=4.0,shape=(15,),dtype=np.float32)
-    ))
+    self.action_space = spaces.Box(low=-1.0,high=4.0,shape=(15,15),dtype=np.float32),
+    self.observation_space = spaces.Box(low=-1.0, high=4.0,shape=(15,15),dtype=np.float32)
     self.population = self.min_max_norm(env_config["population"])
 
     Q = np.zeros([15, 15])
@@ -272,7 +266,7 @@ class EpidemicMultiEnv(gym.Env):
       self.Q_list[index][self.s[index], actions[index]] = Q_sa + self.lr * (r[index] + self.y * np.max(self.Q_list[index][s1[index], :]) - Q_sa)
       self.reward_all_arr[index] += r[index]
       self.s[index] = s1[index]
-    print(self.agent_matrix, np.mean(self.steps))
+
     return self.agent_matrix, np.mean(self.steps), d, {}
 
   def reset(self) -> List[int]:
@@ -294,18 +288,19 @@ class EpidemicMultiEnv(gym.Env):
 
     return states
 
-
-population = [np.load("./data/seocho.npy"),
+if __name__ == "__main__":
+  population = [
+    np.load("./data/seocho.npy"),
     np.load("./data/daechi.npy"),
     np.load("./data/dogok.npy"),
     np.load("./data/yangjae.npy"),
     np.load("./data/sunreung.npy"),
     np.load("./data/nambu.npy")
   ]
-ray.init()
-trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
-    "env_config": {'agent_num':200,'population':population},  # config to pass to env class
-})
+  ray.init()
+  trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
+      "env_config": {'agent_num':200,'population':population},  # config to pass to env class
+  })
 
-while True:
+  while True:
     print(trainer.train())

@@ -15,7 +15,7 @@ if __name__ == "__main__":
   ]
 
   env = gym.make('EpidemicMultiEnv-v0')
-  env.env.__init__(200, population)
+  env.env.__init__({"agent_num": 200, "population": population})
 
   agent_num = env.env.agent_num
 

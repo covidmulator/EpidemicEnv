@@ -49,22 +49,16 @@ REWARD_MATRIX = [
 ]
 
 class EpidemicMultiEnv(gym.Env):
-  def __init__(self, agent_num: int, population: list) -> None:
+  def __init__(self, env_config):
     agent_matrix = AGENT_MATRIX
     reward_matrix = REWARD_MATRIX
 
-    self.agent_num = agent_num
+    self.agent_num = env_config["agent_num"]
     self.action_length = 4
     self.state_length = 15 * 15
-    self.action_space = spaces.Tuple((
-      spaces.Discrete(15),
-      spaces.Discrete(15)
-    ))
-    self.observation_space = spaces.Tuple((
-      spaces.Discrete(15),
-      spaces.Discrete(15)
-    ))
-    self.population = self.min_max_norm(population)
+    self.action_space = spaces.Box(low=-1.0,high=4.0,shape=(15,15),dtype=np.float32),
+    self.observation_space = spaces.Box(low=-1.0, high=4.0,shape=(15,15),dtype=np.float32)
+    self.population = self.min_max_norm(env_config["population"])
 
     Q = np.zeros([15, 15])
 
@@ -78,18 +72,18 @@ class EpidemicMultiEnv(gym.Env):
     self.episode = 0
     self.destinations = self.get_position()
     
-    self.steps = [0 for _ in range(agent_num)]
+    self.steps = [0 for _ in range(env_config["agent_num"])]
 
     self.reward_matrix = self.get_reward_matrix(reward_matrix)
 
-    self.Q_list = [Q for _ in range(agent_num)]
+    self.Q_list = [Q for _ in range(env_config["agent_num"])]
     self.lr = .8
     self.y = .95
     self.epsilon = .9
     self.s = [self.encode_state(i) for i in range(self.agent_num)]
 
-    self.reward_arr = [0 for _ in range(agent_num)]
-    self.reward_all_arr = [0 for _ in range(agent_num)]
+    self.reward_arr = [0 for _ in range(env_config["agent_num"])]
+    self.reward_all_arr = [0 for _ in range(env_config["agent_num"])]
 
 
   def min_max_norm(self, lst: list) -> list:
@@ -109,7 +103,6 @@ class EpidemicMultiEnv(gym.Env):
     matrix_result[7][4] = self.population[3][e]
     matrix_result[9][9] = self.population[4][e]
     matrix_result[3][4] = self.population[5][e]
-
     return matrix_result
 
   def get_position(self) -> list:
@@ -220,6 +213,7 @@ class EpidemicMultiEnv(gym.Env):
 
     reward_return += self.reward_matrix[agent_x][agent_y]
     
+    
     return reward_return, is_end
 
   def choose_action(self):
@@ -287,4 +281,4 @@ class EpidemicMultiEnv(gym.Env):
     states = [self.encode_state(i) for i in range(self.agent_num)]
     self.s = states
 
-    return states
+    return np.array(agent_matrix).astype(int)
