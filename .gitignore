@@ -3,3 +3,6 @@ __pycache__
 
 # mac
 .DS_Store
+
+# result
+result.json

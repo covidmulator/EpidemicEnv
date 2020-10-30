@@ -61,8 +61,13 @@ class EpidemicMultiEnv(gym.Env):
     self.agent_num = env_config["agent_num"]
     self.action_length = 4
     self.state_length = 15 * 15
+<<<<<<< HEAD
     self.action_space = spaces.Box(low=-1.0,high=4.0,shape=(15,15),dtype=np.float32),
     self.observation_space = spaces.Box(low=-1.0, high=4.0,shape=(15,15),dtype=np.float32)
+=======
+    self.action_space = spaces.Box(low=0.0, high=4.0, shape=(15, 15), dtype=np.float32)
+    self.observation_space = spaces.Box(low=0.0, high=4.0, shape=(15, 15), dtype=np.float32)
+>>>>>>> 6d0943a4bd9aa2d388a8750fd40d87ea3b77b7f6
     self.population = self.min_max_norm(env_config["population"])
 
     Q = np.zeros([15, 15])
@@ -188,7 +193,7 @@ class EpidemicMultiEnv(gym.Env):
     status = COMMON
     self.steps[index] += 1
 
-    if(self.is_virus_around(index)):
+    if self.is_virus_around(index):
       status = VIRUS
       self.steps[index] -= 1
 
@@ -256,6 +261,8 @@ class EpidemicMultiEnv(gym.Env):
         self.reward_matrix[x][y] += matrix[x][y]
 
   def step(self, matrix: list) -> Tuple[list, float, list, dict]:
+    matrix = matrix[0]
+    print(len(matrix))
     self.update_reward_matrix(matrix)
 
     actions = self.choose_action()
@@ -286,7 +293,7 @@ class EpidemicMultiEnv(gym.Env):
     states = [self.encode_state(i) for i in range(self.agent_num)]
     self.s = states
 
-    return states
+    return np.array(agent_matrix).astype(int)
 
 if __name__ == "__main__":
   population = [
@@ -297,10 +304,17 @@ if __name__ == "__main__":
     np.load("./data/sunreung.npy"),
     np.load("./data/nambu.npy")
   ]
+<<<<<<< HEAD
   ray.init()
   trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
       "env_config": {'agent_num':200,'population':population},  # config to pass to env class
   })
+=======
+ray.init()
+trainer = a3c.A3CTrainer(env=EpidemicMultiEnv, config={
+    "env_config": {'agent_num':100, 'population':population},  # config to pass to env class
+})
+>>>>>>> 6d0943a4bd9aa2d388a8750fd40d87ea3b77b7f6
 
   while True:
     print(trainer.train())
